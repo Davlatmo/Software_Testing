@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- camera body -->
+  <rect x="25" y="22" width="50" height="38" rx="10" fill="#0891b2"/>
+  <rect x="28" y="25" width="44" height="32" rx="8" fill="#0e7490"/>
+  <!-- lens ring outer -->
+  <circle cx="50" cy="41" r="14" fill="#0891b2"/>
+  <!-- lens ring inner -->
+  <circle cx="50" cy="41" r="11" fill="#0e7490"/>
+  <!-- lens glass -->
+  <circle cx="50" cy="41" r="8" fill="#164e63"/>
+  <!-- lens reflection -->
+  <circle cx="50" cy="41" r="6" fill="#0c4a6e"/>
+  <ellipse cx="46" cy="37" rx="2.5" ry="1.5" fill="#67e8f9" opacity="0.7" transform="rotate(-20 46 37)"/>
+  <!-- LED indicator -->
+  <circle cx="72" cy="29" r="3" fill="#06b6d4"/>
+  <circle cx="72" cy="29" r="1.5" fill="#cffafe"/>
+  <!-- clip mount -->
+  <rect x="38" y="60" width="24" height="7" rx="3" fill="#0891b2"/>
+  <rect x="42" y="67" width="16" height="4" rx="2" fill="#0e7490"/>
+  <!-- clip prong -->
+  <path d="M38 70 Q38 80 50 80 Q62 80 62 70" fill="none" stroke="#0891b2" stroke-width="4" stroke-linecap="round"/>
+  <!-- usb cable -->
+  <line x1="50" y1="80" x2="50" y2="90" stroke="#0e7490" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- headband arc -->
+  <path d="M20 52 Q20 18 50 18 Q80 18 80 52" fill="none" stroke="#0891b2" stroke-width="7" stroke-linecap="round"/>
+  <!-- left ear cup -->
+  <rect x="10" y="48" width="18" height="26" rx="9" fill="#0891b2"/>
+  <rect x="13" y="52" width="12" height="18" rx="6" fill="#0e7490"/>
+  <!-- right ear cup -->
+  <rect x="72" y="48" width="18" height="26" rx="9" fill="#0891b2"/>
+  <rect x="75" y="52" width="12" height="18" rx="6" fill="#0e7490"/>
+  <!-- cushion detail left -->
+  <ellipse cx="19" cy="61" rx="5" ry="8" fill="#67e8f9" opacity="0.4"/>
+  <!-- cushion detail right -->
+  <ellipse cx="81" cy="61" rx="5" ry="8" fill="#67e8f9" opacity="0.4"/>
+  <!-- mic boom -->
+  <line x1="10" y1="72" x2="6" y2="82" stroke="#0e7490" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="6" cy="83" r="3" fill="#0891b2"/>
+</svg>
