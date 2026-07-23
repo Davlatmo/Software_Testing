@@ -31,6 +31,7 @@ import json
 
 from openai import OpenAI
 from playwright.sync_api import sync_playwright
+from dotenv import load_dotenv
 
 _this_dir = os.path.dirname(os.path.abspath(__file__))
 _app_dir  = os.path.normpath(os.path.join(_this_dir, "..", "app"))
@@ -45,10 +46,10 @@ BASE_URL = "http://localhost:3003"
 # ---------------------------------------------------------------------------
 # Azure OpenAI configuration
 # ---------------------------------------------------------------------------
-
-AZURE_ENDPOINT   = "https://gaeta-mj8ipx75-swedencentral.services.ai.azure.com/openai/v1"
+load_dotenv()
+AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
 AZURE_DEPLOYMENT = "gpt-4.1"
-AZURE_API_KEY    = "Ek1fK3UKcU6RHLC1P73IctVlEFi5K4GKkZgtPcAyeUcRPBH2Q0fRJQQJ99BLACfhMk5XJ3w3AAAAACOGVr8d"
+AZURE_API_KEY= os.getenv("AZURE_API_KEY")
 
 # Creating the OpenAI client pointed at our Azure endpoint
 azure_client = OpenAI(
