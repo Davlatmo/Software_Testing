@@ -88,7 +88,7 @@ def _ensure_browser():
     if _pw is None:
         _pw = sync_playwright().start()
         _browser = _pw.chromium.launch(
-            headless=False,
+            headless=True,
             args=["--window-size=1280,800"],
         )
 
