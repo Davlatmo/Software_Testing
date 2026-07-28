@@ -15,9 +15,9 @@ to perform the steps, just like a human tester would:
 HOW OUR AGENTIC AI WORKS
 ------------------------
 1. Flask server starts once for all tests
-2. For each scenario: take screenshot → ask Claude → execute action → repeat
-3. Claude reads the page visually and responds with the next action
-4. Loop until Claude says PASS or FAIL
+2. For each scenario: take screenshot → ask gpt → execute action → repeat
+3. GPT reads the page visually and responds with the next action
+4. Loop until AI says PASS or FAIL
 
 """
 
