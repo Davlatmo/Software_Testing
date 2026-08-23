@@ -88,12 +88,12 @@ class BaseAgent:
         if expect_json:
             messages[0]["content"] += (
                 "\n\nIMPORTANT: Respond ONLY with valid JSON. "
-                "No markdown, no explanation, no code fences. Just JSON."
+                "No markdown, no explanation. Just JSON."
             )
  
         response = self.client.chat.completions.create(
             model=self.deployment,
-            max_tokens=4000,
+            max_completion_tokens=4000,
             messages=messages,
         )
  
