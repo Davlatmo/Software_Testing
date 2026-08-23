@@ -15,7 +15,6 @@ app = Flask(__name__, static_folder="public")
 # ---------------------------------------------------------------------------
 # In-memory data 
 # ---------------------------------------------------------------------------
-
 # Our Dictionary
 PRODUCTS = [
     {"id": 1, "name": "Wireless Headphones",  "price": 79.99,  "category": "electronics",  "image": "headphones.svg", "stock": 15},
@@ -31,7 +30,7 @@ SESSIONS: dict = {}
 
 # Global users list shared across sessions 
 USERS: list = [
-    {"id": 1, "email": "demo@techshop.io", "password": "demo123", "name": "Demo User"}
+    {"id": 1, "email": "dasha@techshop.com", "password": "dasha123", "name": "Dasha"}
 ]
 
 @app.before_request
@@ -45,8 +44,9 @@ def ensure_session():
     session_id = request.cookies.get("sessionId")
 
     if not session_id or session_id not in SESSIONS:
-        # Create a fresh session
-        session_id = str(uuid.uuid4())          # uuid.uuid4() ≈ uuidv4() in JS
+
+    # Create a fresh session
+        session_id = str(uuid.uuid4())          
         SESSIONS[session_id] = {
             "cart": [],
             "current_user": None,
@@ -66,7 +66,7 @@ def attach_session_cookie(response, session_id):
         "sessionId",
         session_id,
         httponly=True,     
-        samesite="Lax",     # protects against CSRF
+        samesite="Lax",    
     )
     return response
 
@@ -156,8 +156,7 @@ def get_product(product_id):
     return jsonify(product)
 
 
-# --- Cart -------------------------------------------------------------------
-
+#Cart
 @app.route("/api/cart", methods=["GET"])
 def get_cart():
     """GET /api/cart — returns items with product details and total."""
@@ -233,8 +232,7 @@ def clear_cart():
     return jsonify({"message": "Cart cleared"})
 
 
-# --- Auth -------------------------------------------------------------------
-
+#Authentication
 @app.route("/api/login", methods=["POST"])
 def login():
     """POST /api/login — body: { email, password }"""
@@ -296,8 +294,7 @@ def get_user():
     return jsonify({"id": user["id"], "email": user["email"], "name": user["name"]})
 
 
-# --- Checkout ---------------------------------------------------------------
-
+#Checkout
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
     """POST /api/checkout — body: { shipping: { address, city, zip } }"""
@@ -328,17 +325,14 @@ def checkout():
     return jsonify({"message": "Order placed successfully", "order": order})
 
 
-# --- Health -----------------------------------------------------------------
-
+#Helath
 @app.route("/api/health", methods=["GET"])
 def health():
     """GET /api/health"""
     return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat() + "Z"})
 
 
-# ---------------------------------------------------------------------------
 # Entry point
-# ---------------------------------------------------------------------------
 if __name__ == "__main__":
     PORT = int(os.environ.get("PORT", 3000))
     print(f"TechShop server running on http://localhost:{PORT}")

@@ -1,9 +1,0 @@
-openai
-playwright
-python-dotenv
-pydantic-settings
-pytest
-pytest-playwright
-pytest-json-report
-chromadb
-markitdown
