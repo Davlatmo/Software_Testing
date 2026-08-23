@@ -113,35 +113,57 @@ def serve_static(path):
 def get_products():
     """
     GET /api/products
-    Implements REQ-01, REQ-02, REQ-03, REQ-04, REQ-05
+    Optional query parameters: category, search, minPrice, maxPrice
+    Implements REQ-01, REQ-02, REQ-03, REQ-04
+    REQ-05 (single product) is handled by get_product() below.
     """
     category  = request.args.get("category")
     search    = request.args.get("search")
-    min_price = request.args.get("minPrice", type=float)
-    max_price = request.args.get("maxPrice", type=float)
+    min_price_raw = request.args.get("minPrice")
+    max_price_raw = request.args.get("maxPrice")
 
-    # REQ-02: validating category
-    VALID_CATEGORIES = {"electronics", "accessories", "all"}
-    if category and category not in VALID_CATEGORIES:
-        return jsonify({"error": "Invalid category"}), 400
+    # REQ-02: validate category — only electronics and accessories are valid
+    # Normalize to lowercase so "Electronics" and "electronics" both work
+    VALID_CATEGORIES = {"electronics", "accessories"}
+    if category:
+        category = category.lower()                        # fix issue 2
+        if category != "all" and category not in VALID_CATEGORIES:
+            return jsonify({"error": "Invalid category"}), 400
 
-    # REQ-03: minPrice cannot be greater than maxPrice
+    # REQ-03: parse price params explicitly so invalid numbers return 400
+    min_price = None
+    max_price = None
+
+    if min_price_raw is not None:                          # fix issue 3
+        try:
+            min_price = float(min_price_raw)
+        except ValueError:
+            return jsonify({"error": "minPrice must be a number"}), 400
+
+    if max_price_raw is not None:                          # fix issue 3
+        try:
+            max_price = float(max_price_raw)
+        except ValueError:
+            return jsonify({"error": "maxPrice must be a number"}), 400
+
     if min_price is not None and max_price is not None:
         if min_price > max_price:
             return jsonify({"error": "minPrice cannot be greater than maxPrice"}), 400
 
     filtered = list(PRODUCTS)
 
+    # REQ-02: filter by category (already lowercased above)
     if category and category != "all":
         filtered = [p for p in filtered if p["category"] == category]
 
+    # REQ-01: case-insensitive search, whitespace-only = no filter
     if search:
-        # REQ-01: strip whitespace, case-insensitive
         search_stripped = search.strip()
         if search_stripped:
             search_lower = search_stripped.lower()
             filtered = [p for p in filtered if search_lower in p["name"].lower()]
 
+    # REQ-03: price range filter
     if min_price is not None:
         filtered = [p for p in filtered if p["price"] >= min_price]
 
