@@ -109,29 +109,38 @@ def serve_static(path):
 # ---------------------------------------------------------------------------
 # API ROUTES
 # ---------------------------------------------------------------------------
-
 @app.route("/api/products", methods=["GET"])
 def get_products():
     """
     GET /api/products
-    Optional query params: category, search, minPrice, maxPrice
-
-    `request.args` in Flask == `req.query` in Express
+    Implements REQ-01, REQ-02, REQ-03, REQ-04, REQ-05
     """
-    category  = request.args.get("category")    # ?category=electronics
-    search    = request.args.get("search")       # ?search=keyboard
-    min_price = request.args.get("minPrice", type=float)  
+    category  = request.args.get("category")
+    search    = request.args.get("search")
+    min_price = request.args.get("minPrice", type=float)
     max_price = request.args.get("maxPrice", type=float)
 
-    # Start with all products then filter 
-    filtered = list(PRODUCTS)   # shallow copy
+    # REQ-02: validating category
+    VALID_CATEGORIES = {"electronics", "accessories", "all"}
+    if category and category not in VALID_CATEGORIES:
+        return jsonify({"error": "Invalid category"}), 400
+
+    # REQ-03: minPrice cannot be greater than maxPrice
+    if min_price is not None and max_price is not None:
+        if min_price > max_price:
+            return jsonify({"error": "minPrice cannot be greater than maxPrice"}), 400
+
+    filtered = list(PRODUCTS)
 
     if category and category != "all":
         filtered = [p for p in filtered if p["category"] == category]
 
     if search:
-        search_lower = search.lower()
-        filtered = [p for p in filtered if search_lower in p["name"].lower()]
+        # REQ-01: strip whitespace, case-insensitive
+        search_stripped = search.strip()
+        if search_stripped:
+            search_lower = search_stripped.lower()
+            filtered = [p for p in filtered if search_lower in p["name"].lower()]
 
     if min_price is not None:
         filtered = [p for p in filtered if p["price"] >= min_price]
@@ -139,15 +148,13 @@ def get_products():
     if max_price is not None:
         filtered = [p for p in filtered if p["price"] <= max_price]
 
-    
     return jsonify(filtered)
-
 
 @app.route("/api/products/<int:product_id>", methods=["GET"])
 def get_product(product_id):
     """
     GET /api/products/:id
-    `<int:product_id>` is Flask's URL converter — same as req.params.id (auto-cast)
+    `<int:product_id>` is Flask's URL converter, same as req.params.id
     """
     product = next((p for p in PRODUCTS if p["id"] == product_id), None)
     if not product:
@@ -159,7 +166,7 @@ def get_product(product_id):
 #Cart
 @app.route("/api/cart", methods=["GET"])
 def get_cart():
-    """GET /api/cart — returns items with product details and total."""
+    """GET /api/cart, returns items with product details and total."""
     cart = request.session["cart"]
 
     # Enriching each cart item with full product info
@@ -199,7 +206,7 @@ def add_to_cart():
 
 @app.route("/api/cart/<int:product_id>", methods=["PUT"])
 def update_cart(product_id):
-    """PUT /api/cart/:productId — body: { quantity }"""
+    """PUT /api/cart/:productId,  body: { quantity }"""
     data     = request.json or {}
     quantity = data.get("quantity")
     cart     = request.session["cart"]
@@ -235,7 +242,7 @@ def clear_cart():
 #Authentication
 @app.route("/api/login", methods=["POST"])
 def login():
-    """POST /api/login — body: { email, password }"""
+    """POST /api/login, body: { email, password }"""
     data     = request.json or {}
     email    = data.get("email")
     password = data.get("password")
@@ -263,7 +270,8 @@ def logout():
 
 @app.route("/api/register", methods=["POST"])
 def register():
-    """POST /api/register — body: { email, password, name }"""
+    """POST /api/register, 
+     body: { email, password, name }"""
     data     = request.json or {}
     email    = data.get("email")
     password = data.get("password")
@@ -287,7 +295,7 @@ def register():
 
 @app.route("/api/user", methods=["GET"])
 def get_user():
-    """GET /api/user — returns the currently logged-in user."""
+    """GET /api/user, returns the currently logged in user."""
     user = request.session.get("current_user")
     if not user:
         return jsonify({"error": "Not logged in"}), 401
@@ -297,12 +305,13 @@ def get_user():
 #Checkout
 @app.route("/api/checkout", methods=["POST"])
 def checkout():
-    """POST /api/checkout — body: { shipping: { address, city, zip } }"""
+    """POST /api/checkout, 
+       body: { shipping: { address, city, zip } }"""
     cart = request.session["cart"]
     if not cart:
         return jsonify({"error": "Cart is empty"}), 400
 
-    data     = request.json or {}
+    data  = request.json or {}
     shipping = data.get("shipping", {})
     if not all(shipping.get(k) for k in ("address", "city", "zip")):
         return jsonify({"error": "Shipping information required"}), 400
@@ -311,10 +320,10 @@ def checkout():
     for item in cart:
         product = next((p for p in PRODUCTS if p["id"] == item["productId"]), None)
         total  += product["price"] * item["quantity"]
-        product["stock"] -= item["quantity"]   # reduce stock (same as JS)
+        product["stock"] -= item["quantity"]   # reduce stock 
 
     order = {
-        "id": int(datetime.utcnow().timestamp() * 1000),  # Date.now() equivalent
+        "id": int(datetime.utcnow().timestamp() * 1000),
         "items": list(cart),
         "total": f"{total:.2f}",
         "shipping": shipping,
