@@ -122,7 +122,7 @@ def get_products():
     min_price_raw = request.args.get("minPrice")
     max_price_raw = request.args.get("maxPrice")
 
-    # REQ-02: validate category — only electronics and accessories are valid
+    # REQ-02: validating category,  only electronics and accessories are valid
     # Normalize to lowercase so "Electronics" and "electronics" both work
     VALID_CATEGORIES = {"electronics", "accessories"}
     if category:
@@ -134,13 +134,13 @@ def get_products():
     min_price = None
     max_price = None
 
-    if min_price_raw is not None:                          # fix issue 3
+    if min_price_raw is not None:                         
         try:
             min_price = float(min_price_raw)
         except ValueError:
             return jsonify({"error": "minPrice must be a number"}), 400
 
-    if max_price_raw is not None:                          # fix issue 3
+    if max_price_raw is not None:                         
         try:
             max_price = float(max_price_raw)
         except ValueError:
