@@ -114,7 +114,7 @@ def serve_static(path):
 def get_products():
     """
     GET /api/products
-    query parameters: category, search, minPrice, maxPrice
+    Query parameters: category, search, minPrice, maxPrice
     Implements REQ-01, REQ-02, REQ-03, REQ-04
     REQ-05 -> single is handled by get_product() below.
     """
@@ -137,23 +137,23 @@ def get_products():
 
     if min_price_raw is not None:
         try:
-         min_price = float(min_price_raw)
-         if math.isnan(min_price) or math.isinf(min_price):   # ← add this line
+          min_price = float(min_price_raw)
+          if math.isnan(min_price) or math.isinf(min_price):   # ← add this line
             raise ValueError
         except ValueError:
-          return jsonify({"error": "minPrice must be a number"}), 400
+          return jsonify({"error": "min price must be a number"}), 400
 
     if max_price_raw is not None:
         try:
-         max_price = float(max_price_raw)
-         if math.isnan(max_price) or math.isinf(max_price):   # ← add this line
+          max_price = float(max_price_raw)
+          if math.isnan(max_price) or math.isinf(max_price):   # ← add this line
             raise ValueError
         except ValueError:
-         return jsonify({"error": "maxPrice must be a number"}), 400
+          return jsonify({"error": "max price must be a number"}), 400
     
     if min_price is not None and max_price is not None:
         if min_price > max_price:
-            return jsonify({"error": "minPrice cannot be greater than maxPrice"}), 400
+            return jsonify({"error": "min price cannot be greater than max price"}), 400
 
     filtered = list(PRODUCTS)
 
