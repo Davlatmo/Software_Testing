@@ -115,7 +115,7 @@ def get_products():
     GET /api/products
     Optional query parameters: category, search, minPrice, maxPrice
     Implements REQ-01, REQ-02, REQ-03, REQ-04
-    REQ-05 (single product) is handled by get_product() below.
+    REQ-05 -> single product is handled by get_product() below.
     """
     category  = request.args.get("category")
     search    = request.args.get("search")
@@ -152,7 +152,7 @@ def get_products():
 
     filtered = list(PRODUCTS)
 
-    # REQ-02: filter by category (already lowercased above)
+    # REQ-02: filter by category -> already lowercased above
     if category and category != "all":
         filtered = [p for p in filtered if p["category"] == category]
 
