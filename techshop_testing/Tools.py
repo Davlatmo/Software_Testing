@@ -113,10 +113,12 @@ def git_diff() -> str:
         *Since our  commit is a trigger, we want the committed changes
     """
     result = subprocess.run(
-        ["git", "diff", "HEAD~1", "HEAD"],
+        ["git", "diff", "HEAD~1", "HEAD", "--", ".", ":(exclude).venv"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        encoding='utf-8', 
+        errors='replace',     
     )
  
     if result.returncode != 0:
