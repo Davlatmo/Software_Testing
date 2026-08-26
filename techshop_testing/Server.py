@@ -2,6 +2,7 @@
 TechShop Flask Server
 """
 import uuid
+import math
 import json
 from datetime import datetime
 from functools import wraps
@@ -115,7 +116,7 @@ def get_products():
     GET /api/products
     Optional query parameters: category, search, minPrice, maxPrice
     Implements REQ-01, REQ-02, REQ-03, REQ-04
-    REQ-05 -> single product is handled by get_product() below.
+    REQ-05 -> single products is handled by get_product() below.
     """
     category  = request.args.get("category")
     search    = request.args.get("search")
@@ -137,12 +138,16 @@ def get_products():
     if min_price_raw is not None:                         
         try:
             min_price = float(min_price_raw)
+            if math.isnan(min_price) or math.isinf(min_price): 
+                raise ValueError
         except ValueError:
             return jsonify({"error": "minPrice must be a number"}), 400
 
     if max_price_raw is not None:                         
         try:
             max_price = float(max_price_raw)
+            if math.isnan(max_price) or math.isinf(max_price): 
+                raise ValueError
         except ValueError:
             return jsonify({"error": "maxPrice must be a number"}), 400
 
