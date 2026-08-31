@@ -1,7 +1,6 @@
 """
 base_agent.py is  shared agent logic
 
-
 Why do we need the base class:
 Our pseudocode defines agent_phase1, agent_phase2, and so on as a separate
 things. But all of our phases  share the same basic behavior:
@@ -62,23 +61,23 @@ class BaseAgent:
         agents share one client, same as our pseudocode passing the
         client through the coordinator.
         """
-        self.client     = client
+        self.client = client
         self.deployment = deployment
         self.instructions: str  = ""    
-        self.tools: list        = []   
+        self.tools: list = []   
 
-#Core method that is used by all our agents
+#Core method that is used by all our agents -> our LLM that is used by agents(model)
     def call_ai(self, user_message: str, expect_json: bool = False) -> str:
         """
-        Sends a message to the  and returns the response text.
+        Sends a message to LLM and returns the response text.
  
         This is just the simple version, no tool calls, just a direct question.
         Used when we have all the context already and just need the AI
         to analyse and write a response for example like writing the reports.
  
         Args:
-            user_message:  The full prompt to send
-            expect_json:   If True, instructs the AI to return only JSON
+            user_message: The full prompt to send message to AI
+            expect_json: If True, instructs the AI to return only JSON
         """
         messages = [
             {"role": "system", "content": self.instructions},
@@ -87,7 +86,7 @@ class BaseAgent:
  
         if expect_json:
             messages[0]["content"] += (
-                "\n\nIMPORTANT: Respond ONLY with valid JSON. "
+                "\n\nImportant: Respond ONLY with valid JSON. "
                 "No markdown, no explanation. Just JSON."
             )
  
@@ -113,7 +112,7 @@ class BaseAgent:
         The agentic loop that sends a message and lets the agent call tools
         until it has enough information to give a final answer. If our agent does not have enough
         information it doesn't give us final answer also a proper answer.
- 
+   
         How the agentic loop works:
             1) Send user_message->(prompt) to the agent along with tool descriptions
             2) agent responds with either:
@@ -141,7 +140,7 @@ class BaseAgent:
             {"role": "user",   "content": user_message},
         ]
  
-        # Our loop: keep going until our agent stops calling tools
+        # Our loop, keep going until our agent stops calling tools
         for _ in range(10): 
             response = self.client.chat.completions.create(
                 model=self.deployment,

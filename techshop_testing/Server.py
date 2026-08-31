@@ -139,7 +139,7 @@ def get_products():
         try:
             min_price = float(min_price_raw)
             if math.isnan(min_price) or math.isinf(min_price):
-             raise ValueError
+              raise ValueError
         except ValueError:
             return jsonify({"error": "minPrice must be a number"}), 400
 
@@ -147,7 +147,7 @@ def get_products():
         try:
             max_price = float(max_price_raw)
             if math.isnan(max_price) or math.isinf(max_price):
-             raise ValueError
+              raise ValueError
         except ValueError:
             return jsonify({"error": "maxPrice must be a number"}), 400
 

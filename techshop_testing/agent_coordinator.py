@@ -38,7 +38,7 @@ import argparse
 from openai import OpenAI
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
-from agents import AgentPhase1, AgentPhase2, AgentPhase3, AgentPhase4
+from agents import AgentPhase1, AgentPhase2, AgentPhase3, AgentPhase4, AgentPhase5
 from Tools import git_diff
 
 #Azure openai configueation
@@ -74,10 +74,10 @@ azure_client = OpenAI(
 """
 
 def agent_coordinator(
-    requirements_path: str   = "requirements.md",
-    past_tests: str          = "tests/test_api.py",
-    project_docs: str        = "README.md",
-    template_to_follow: str  = "tests/unit_test_template.py",
+    requirements_path: str   = "techshop_testing/requirements.md",
+    past_tests: str          = "techshop_testing/tests/test_api.py",
+    project_docs: str        = "techshop_testing/README.md",
+    template_to_follow: str  =  "techshop_testing/tests/unit_test_template.py",
 ):
     
     coordinator_instructions = (
@@ -88,7 +88,7 @@ def agent_coordinator(
     )
 
     print("=" * 60)
-    print("AGENTIC TESTING PIPELINE, STARTING")
+    print("Agentic tetsting pipline is starting")
     print("=" * 60)
     print(f"Requirements: {requirements_path}")
     print(f"Past tests:   {past_tests}")
@@ -208,9 +208,30 @@ def agent_coordinator(
     integration_status = "all the tests passed" if phase4_result["success"] else "some failed"
     print(f"  {integration_status} check the phase4 integration test report")
 
+    print("\n Phase5: Generating consolidated report...")
+ 
+    agent5 = AgentPhase5(azure_client, AZURE_DEPLOYMENT)
+ 
+    final_report_path = agent5.run(
+        phase1_result      = phase1_result,
+        phase3_result      = phase3_result,
+        phase4_result      = phase4_result,
+        requirements_path  = requirements_path,
+        generated_test_file = unit_test_file, 
+       
+
+    )
+    results["phase5"] = {"report_path": final_report_path}
+
     # Summary
     p3 = phase3_result["test_results"]
     p4 = phase4_result["test_results"]
+    all_passed = (
+        phase1_result.get("compliant", False)
+        and p3["success"]
+        and p4["success"]
+    )
+ 
  
     print("\n" + "=" * 60)
     print("Pipline is completed, the final summary")
@@ -219,8 +240,12 @@ def agent_coordinator(
     print(f"Phase 2  Tests generation:       {unit_test_file}")
     print(f"Phase 3  Unit tests execution:            {p3['passed']}/{p3['total']} passed")
     print(f"Phase 4  Integration tests execution:     {p4['passed']}/{p4['total']} passed")
+    print(f"Phase 5  Consolidated report:   {final_report_path}")
     print()
-    print("Reports written to: reports/")
+    print(f"Overall verdict: {'All passed' if all_passed else 'Some failed, see report'}")
+    print()
+    print("Open the final report for a full developer summary:")
+    print("all the unit and integration tests reports along with final report for a full developer summary: reports/")
     print("=" * 60)
  
     return results
@@ -231,22 +256,23 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "requirements",
-        default="requirements.md",
+        nargs="?",
+        default="techshop_testing/requirements.md",
         help="Path to the feature requirements file (default: requirements.md)",
     )
     parser.add_argument(
         "--past-tests",
-        default="tests/test_api.py",
+        default="techshop_testing/tests/test_api.py",
         help="Path to existing tests for structure and better tests generation ",
     )
     parser.add_argument(
         "--docs",
-        default="README.md",
+        default="techshop_testing/README.md",
         help="Path to project documentation",
     )
     parser.add_argument(
         "--template",
-        default="tests/unit_test_template.py",
+        default="techshop_testing/tests/unit_test_template.py",
         help="Path to unit test template",
     )
  

@@ -23,6 +23,7 @@ By separating the tools from agent means:
 """
 import subprocess
 import os
+import sys
 import json
 from datetime import datetime
 
@@ -158,7 +159,7 @@ def run_tests(test_file: str) -> dict:
         raise FileNotFoundError(f"run_tests: '{test_file}' not found")
  
     result = subprocess.run(
-        ["python3", "-m", "unittest", test_file, "-v"],
+        [sys.executable, "-m", "unittest", test_file, "-v"],
         capture_output=True,
         text=True,
     )

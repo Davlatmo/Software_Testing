@@ -44,7 +44,7 @@ def install_hook():
         print("Run: git init (if you haven't initialised git yet)")
         sys.exit(1)
  
-    hooks_dir = os.path.join(git_dir, "hook")
+    hooks_dir = os.path.join(git_dir, "hooks")
     os.makedirs(hooks_dir, exist_ok=True)
  
     print(f"Found .git directory: {git_dir}")
@@ -84,7 +84,7 @@ def install_hook():
         "agent_coordinator.py",
         "agents.py",
         "base_agent.py",
-        "tools.py",
+        "Tools.py",
         "requirements.md",
         "README.md",
         "tests/unit_test_template.py",
@@ -96,7 +96,7 @@ def install_hook():
     for f in required_files:
         path = os.path.join(script_dir, f)
         if os.path.exists(path):
-            print(f"All required files exist{f}")
+            print(f"All required files exist {f}")
         else:
             print(f"Some required files doesn't exist{f} -> MISSING")
             all_ok = False

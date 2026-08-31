@@ -73,7 +73,8 @@ class AgentPhase1(BaseAgent):
  
         # Tools this agent is allowed to call
         self.tools = ["read_file", "git_diff"]
-     
+
+     #Entry point that is called by our coordinator
     def run(self, requirements_path: str) -> dict:
         """
         Entry point called by the coordinator.
@@ -384,6 +385,22 @@ class AgentPhase4(BaseAgent):
  
         Return only valid Python code when generating tests.
         Return clear markdown when writing reports.
+
+        Critical: Every generated test file must include this exact server startup
+        in setUpClass, don't use an external server:
+
+    @classmethod
+    def setUpClass(cls):
+        import threading, time, sys, os
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from techshop_testing.Server import app
+        t = threading.Thread(
+            target=lambda: app.run(host='127.0.0.1', port=3000,
+                                   debug=False, use_reloader=False),
+            daemon=True
+        )
+        t.start()
+        time.sleep(1.0)
         """
  
         self.tools = ["read_file", "run_tests"]
@@ -491,4 +508,164 @@ class AgentPhase4(BaseAgent):
             "report":       report,
             "success":      raw_results["success"],
         }
+
+class AgentPhase5(BaseAgent):
+    """
+    Reads all four phases reports and creates one single developer facing
+    summary document saved to reports/final_*.md
  
+    This phase exist beacuse:
+        After phases 1-4, the developer has four separate report files.
+        In the fifth stage, they are combined into one document that provides the answers:
+          * What was committed and does it meet requirements?
+          * How many tests passed and failed across all levels?
+          * What bugs were found, how severe are they, and what to fix first  according to priority?
+          * What is working correctly and should not be changed?
+          * What is the overall quality rating of this commit?
+ 
+    Tools this agent uses:
+        read_file   -> reads all four phase reports
+        write_file  -> saves the final consolidated report
+    """
+ 
+    def __init__(self, client, deployment):
+        super().__init__(client, deployment)
+ 
+        self.instructions = """
+        You are a senior engineering lead writing a final consolidated
+        test report for a developer after an automated pipeline ran.
+ 
+        You will be given the results from all four pipeline phases.
+        Write a single, clear, well structured  report that a
+        developer can read in few minutes and know exactly what to do next.
+ 
+        Report structure -> follow this exactly:
+ 
+        # Final Pipeline Report — <feature name>
+        **Commit:** <short description of what was committed>
+        **Date:** <today's date>
+        **Overall verdict:** PASSED / PASSED WITH WARNINGS / FAILED
+ 
+        ## Summary table
+        | Phase | Description | Result | Tests |
+        |-------|-------------|--------|-------|
+        | 1 | Requirements check | PASSED/FAILED | — |
+        | 2 | Test generation | DONE | N tests generated |
+        | 3 | Unit tests | PASSED/FAILED | X/Y passed |
+        | 4 | Integration tests | PASSED/FAILED | X/Y passed |
+ 
+        ## What was verified
+        List every requirement (REQ-01 etc.) and whether it passed.
+ 
+        ## Bugs found
+        For each bug found across all phases:
+        - **Severity**: Critical / High / Medium / Low
+        - **Found by**: Unit test / Integration test / Requirements check
+        - **Description**: What went wrong
+        - **Status**: Fixed / Still open
+ 
+        ## What is working correctly
+        List what passed and should NOT be changed.
+ 
+        ## Action items
+        Numbered list ordered by priority. Each item has:
+        - What to fix
+        - Which file to change
+        - Estimated effort (minutes/hours)
+ 
+        ## Quality verdict
+        One paragraph: overall assessment of the commit quality,
+        what the developer did well, and what to improve next time.
+ 
+        TONE: Direct, specific, constructive. Reference exact test names,
+        file names, and line numbers. No generic advice.
+        """
+ 
+        self.tools = ["read_file"]
+ 
+    def run(
+        self,
+        phase1_result: dict,
+        phase3_result: dict,
+        phase4_result: dict,
+        requirements_path: str,
+        generated_test_file: str,
+    ) -> str:
+        """
+        Entry point called by the coordinator.
+ 
+        Builds a rich context from all phase results and calls the AI
+        to combine them into one consolidated report.
+ 
+        Args:
+            phase1_result -> compliance dictionary from Phase 1
+            phase3_result -> results dictionary from Phase 3
+            phase4_result -> results dictionary from Phase 4
+            requirements_path ->path to requirements file
+            generated_test_file ->path to the generated test file
+ 
+        Returns:
+            path to the saved final report
+        """
+        print("\n[Phase 5] Generating consolidated report.....")
+ 
+        p3 = phase3_result["test_results"]
+        p4 = phase4_result["test_results"]
+ 
+        # Determine overall verdict
+        if not phase1_result.get("compliant"):
+            verdict = "FAILED"
+        elif not p3["success"] or not p4["success"]:
+            verdict = "Passed with warnings"
+        else:
+            verdict = "PASSED"
+ 
+        # Build the full context to send to the AI
+        context = f"""
+PHASE1: Requirements Compliance
+Result: {"COMPLIANT" if phase1_result.get("compliant") else "NON-COMPLIANT"}
+Summary: {phase1_result.get("summary", "")}
+Missing: {phase1_result.get("missing", [])}
+Errors: {phase1_result.get("errors", [])}
+Suggestions: {phase1_result.get("suggestions", [])}
+Quality notes: {phase1_result.get("quality_notes", [])}
+ 
+PHASE2: Tests Generation
+Generated file: {generated_test_file}
+ 
+PHASE3: Unit Tests Execution
+Total: {p3["total"]}
+Passed: {p3["passed"]}
+Failed: {p3["failed"]}
+Errors: {p3["errors"]}
+All passed: {p3["success"]}
+Unit test report:
+{phase3_result.get("report", "(not available)")}
+ 
+PHASE4: Itegration Tests
+Total: {p4["total"]}
+Passed: {p4["passed"]}
+Failed: {p4["failed"]}
+Errors: {p4["errors"]}
+All passed: {p4["success"]}
+Integration test report:
+{phase4_result.get("report", "(not available)")}
+ 
+Overall Assessment: {verdict}
+        """
+ 
+        final_report = self.call_ai(
+            f"""Write the final consolidated pipeline report.
+ 
+            Use all the information below to produce one clear 
+            document a developer can act on immediately.
+ 
+            {context}
+            """
+        )
+ 
+        # Save to reports/final_*.md
+        result = write_report(final_report, phase="5_final")
+        print(f"[Phase 5] {result}")
+ 
+        return result
