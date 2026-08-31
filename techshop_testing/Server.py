@@ -131,7 +131,8 @@ def get_products():
         if category != "all" and category not in VALID_CATEGORIES:
             return jsonify({"error": "Invalid category"}), 400
 
-    # REQ-03: parse price parameters explicitly so invalid numbers return 400
+    # REQ-03:It is necessary to explicitly analyze price parameters
+    # so that an error code 400 is returned for invalid numbers
     min_price = None
     max_price = None
 
