@@ -102,9 +102,9 @@ echo ""
 # Run pipeline in background, capture all output to log
 $PYTHON "$COORDINATOR" \
     --requirements "$REQUIREMENTS" \
-    --past-tests "tests/test_api.py" \
-    --docs "README.md" \
-    --template "tests/unit_test_template.py" \
+    --past-tests "techshop_testing/tests/test_api.py" \
+    --docs "techshop_testing/README.md" \
+    --template "techshop_testing/tests/unit_test_template.py" \
     > "$LOG_FILE" 2>&1 &
  
 PIPELINE_PID=$!
