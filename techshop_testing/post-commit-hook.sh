@@ -66,8 +66,8 @@ echo "Using Python: $($PYTHON --version)"
 
 #Finding our project root -> where our coordinator_agent.py lives
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
-COORDINATOR="$PROJECT_ROOT/agent_coordinator.py"
-REQUIREMENTS="$PROJECT_ROOT/requirements.md"
+COORDINATOR="$PROJECT_ROOT/techshop_testing/agent_coordinator.py"
+REQUIREMENTS="$PROJECT_ROOT/techshop_testing/requirements.md"
  
 # Checking if the coordinator script exists
 if [ ! -f "$COORDINATOR" ]; then
